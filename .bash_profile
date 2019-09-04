@@ -49,3 +49,8 @@ alias gstp='git stash pop'
 alias gsts='git stash save'
 
 alias mycm='cat ~/.bash_profile | grep '
+
+alias activate='source .env/bin/activate'
+
+# wifi utilities
+alias wifisignal='watch -n1 iwconfig'
