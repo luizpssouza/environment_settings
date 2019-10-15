@@ -52,5 +52,7 @@ alias mycm='cat ~/.bash_profile | grep '
 
 alias activate='source .env/bin/activate'
 
+alias k='kubectl'
+
 # wifi utilities
 alias wifisignal='watch -n1 iwconfig'
