@@ -50,7 +50,7 @@ alias gsts='git stash save'
 
 alias mycm='cat ~/.bash_profile | grep '
 
-alias activate='source .env/bin/activate'
+alias activate='source venv/bin/activate'
 
 alias k='kubectl'
 
