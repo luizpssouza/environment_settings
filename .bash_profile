@@ -1,3 +1,6 @@
+alias upt='sudo apt update'
+alias upg='sudo apt upgrade -y'
+alias uptupg='upt & upg'
 
 export PATH="$PATH:/opt/mssql-tools/bin"
 
@@ -39,6 +42,7 @@ alias gmc='git merge --continue'
 alias gp='git pull'
 alias gpr='git pull --rebase'
 alias gpush='git push'
+alias gpushb='git push -u origin HEAD'
 alias gr='git rebase'
 alias gs='git status'
 alias gss='git status --short'
@@ -53,7 +57,9 @@ alias mycm='cat ~/.bash_profile | grep '
 
 alias activate='source venv/bin/activate'
 
+source <(kubectl completion bash)
 alias k='kubectl'
+complete -F __start_kubectl k
 
 # wifi utilities
 alias wifisignal='watch -n1 iwconfig'
