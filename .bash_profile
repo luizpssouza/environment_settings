@@ -1,3 +1,5 @@
+export PATH="${HOME}/.local/bin:$PATH"
+
 alias upt='sudo apt update'
 alias upg='sudo apt upgrade -y'
 alias uptupg='upt & upg'
