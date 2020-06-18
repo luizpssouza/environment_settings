@@ -59,9 +59,7 @@ alias mycm='cat ~/.bash_profile | grep '
 
 alias activate='source venv/bin/activate'
 
-source <(kubectl completion bash)
 alias k='kubectl'
-complete -F __start_kubectl k
 
 # wifi utilities
 alias wifisignal='watch -n1 iwconfig'
