@@ -63,3 +63,6 @@ alias k='kubectl'
 
 # wifi utilities
 alias wifisignal='watch -n1 iwconfig'
+
+# vim
+alias evi='vim ~/.vimrc'

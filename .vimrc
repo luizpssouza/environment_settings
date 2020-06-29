@@ -12,7 +12,7 @@ set expandtab
 set smartindent
 set nu
 set nowrap
-set smartcase
+set ignorecase
 set noswapfile
 set nobackup
 set undodir=~/.vim/undodir
@@ -36,6 +36,7 @@ highlight ColorColumn ctermbg=0 guibg=lightgrey
 
 call plug#begin('~/.vim/plugged')
 
+Plug 'OmniSharp/omnisharp-vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 " Plug 'Valloric/YouCompleteMe', { 'do': './install.py' }
 Plug 'tweekmonster/gofmt.vim'
@@ -83,6 +84,7 @@ let g:go_auto_sameids = 1
 let g:ale_fixers = {
  \ 'javascript': ['eslint'],
  \ 'typescript': ['tslint', 'eslint'],
+ \ 'cs': ['OmniSharp']
  \ }
 
 let g:ale_sign_error = '❌'
@@ -119,6 +121,11 @@ let g:vrfr_rg = 'true'
 let g:netrw_banner = 0
 let g:netrw_winsize = 25
 
+" OmniSharp Settings
+let g:OmniSharp_highlighting = 2
+
+
+nnoremap <leader>y "*y
 nnoremap <leader>h :wincmd h<CR>
 nnoremap <leader>j :wincmd j<CR>
 nnoremap <leader>k :wincmd k<CR>
@@ -126,6 +133,7 @@ nnoremap <leader>l :wincmd l<CR>
 nnoremap <leader>u :UndotreeShow<CR>
 nnoremap <leader>pv :wincmd v<bar> :Ex <bar> :vertical resize 30<CR>
 nnoremap <Leader>ps :Rg<SPACE>
+nnoremap <Leader>; A;<esc>
 nnoremap <C-p> :GFiles<CR>
 nnoremap <Leader>pf :Files<CR>
 nnoremap <Leader><CR> :so ~/.config/nvim/init.vim<CR>
