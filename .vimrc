@@ -47,6 +47,7 @@ Plug 'sheerun/vim-polyglot'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'w0rp/ale'
+Plug 'preservim/nerdcommenter'
 
 Plug 'gruvbox-community/gruvbox'
 Plug 'sainnhe/gruvbox-material'
@@ -90,6 +91,9 @@ let g:ale_fixers = {
 let g:ale_sign_error = '❌'
 let g:ale_sign_warning = '⚠️'
 let g:ale_fix_on_save = 1
+
+"coc settings
+let g:coc_global_extensions = [ 'coc-tsserver' ]
 
 "YouCompleteMe settings
 " let g:ycm_filetype_blacklist = {
@@ -178,6 +182,10 @@ nmap <leader>g] <Plug>(coc-diagnostic-next)
 nmap <silent> <leader>gp <Plug>(coc-diagnostic-prev-error)
 nmap <silent> <leader>gn <Plug>(coc-diagnostic-next-error)
 nnoremap <leader>cr :CocRestart
+" Remap keys for applying codeAction to the current line.
+nmap <leader>ac  <Plug>(coc-codeaction)
+" Apply AutoFix to problem on the current line.
+nmap <leader>qf  <Plug>(coc-fix-current)
 
 " Sweet Sweet FuGITive
 nmap <leader>gh :diffget //3<CR>
