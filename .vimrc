@@ -49,6 +49,8 @@ Plug 'junegunn/fzf.vim'
 Plug 'w0rp/ale'
 Plug 'preservim/nerdcommenter'
 
+Plug 'jiangmiao/auto-pairs'
+
 Plug 'gruvbox-community/gruvbox'
 Plug 'sainnhe/gruvbox-material'
 Plug 'phanviet/vim-monokai-pro'
