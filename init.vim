@@ -3,7 +3,7 @@ syntax on
 set guicursor=
 set noshowmatch
 set relativenumber
-set nohlsearch
+set hlsearch
 set hidden
 set noerrorbells
 set tabstop=4 softtabstop=4
@@ -20,6 +20,10 @@ set undofile
 set incsearch
 set termguicolors
 set scrolloff=8
+set inccommand=split
+set noshowmode
+set clipboard+=unnamedplus
+
 
 " Give more space for displaying messages.
 set cmdheight=2
@@ -38,6 +42,7 @@ call plug#begin('~/.vim/plugged')
 
 Plug 'OmniSharp/omnisharp-vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'neoclide/coc-snippets'
 " Plug 'Valloric/YouCompleteMe', { 'do': './install.py' }
 Plug 'tweekmonster/gofmt.vim'
 Plug 'tpope/vim-fugitive'
@@ -57,7 +62,8 @@ Plug 'phanviet/vim-monokai-pro'
 Plug 'vim-airline/vim-airline'
 Plug 'flazz/vim-colorschemes'
 Plug '/home/mpaulson/personal/vim-be-good'
-Plug 'tveskag/nvim-blame-line'
+Plug 'APZelos/blamer.nvim'
+Plug 'terryma/vim-multiple-cursors'
 
 call plug#end()
 
@@ -128,14 +134,23 @@ let loaded_matchparen = 1
 let mapleader = " "
 
 let g:netrw_browse_split = 2
-let g:vrfr_rg = 'true'
+"let g:vrfr_rg = 'true'
 let g:netrw_banner = 0
 let g:netrw_winsize = 25
+
+let g:fzf_layout = { 'window': { 'width': 0.8, 'height': 0.8 } }
+let $FZF_DEFAULT_OPTS='--reverse'
 
 " OmniSharp Settings
 let g:OmniSharp_highlighting = 2
 
+" ultisnips settings
+let g:UltiSnipsEditSplit='vertical'
+let g:UltiSnipsSnippetsDir='~/.config/nvim/UltiSnipsSnippets'
 
+nnoremap <leader>prw :CocSearch <C-R>=expand("<cword>")<CR><CR>
+nnoremap <leader>pw :Rg <C-R>=expand("<cword>")<CR><CR>
+nnoremap <leader>phw :h <C-R>=expand("<cword>")<CR><CR>
 nnoremap <leader>y "*y
 nnoremap <leader>h :wincmd h<CR>
 nnoremap <leader>j :wincmd j<CR>
@@ -147,11 +162,12 @@ nnoremap <Leader>ps :Rg<SPACE>
 nnoremap <Leader>; A;<esc>
 nnoremap <C-p> :GFiles<CR>
 nnoremap <Leader>pf :Files<CR>
-nnoremap <Leader><CR> :so ~/.config/nvim/init.vim<CR>
+nnoremap <Leader>ev :vsplit ~/.config/nvim/init.vim<CR>
+nnoremap <Leader>sv :so ~/.config/nvim/init.vim<CR>
 nnoremap <Leader>+ :vertical resize +100<CR>
 nnoremap <Leader>- :vertical resize -100<CR>
 nnoremap <Leader>ee oif err != nil {<CR>log.Fatalf("%+v\n", err)<CR>}<CR><esc>kkI<esc>
-nnoremap <Leader>s :.,$s/\<<C-r><C-w>\>//gc<left><left><left>
+nnoremap <Leader>s :.,$s///gc<left><left><left>
 vnoremap J :m '>+1<CR>gv=gv
 vnoremap K :m '<-2<CR>gv=gv
 vnoremap <C-r> "hy:%s/<C-r>h//gc<left><left><left>
@@ -161,19 +177,27 @@ nnoremap <leader>vwm :colorscheme gruvbox<bar>:set background=dark<CR>
 nmap <leader>vtm :highlight Pmenu ctermbg=gray guibg=gray
 
 vnoremap X "_d
-inoremap <C-c> <esc>
+inoremap jj <esc>
 
 function! s:check_back_space() abort
     let col = col('.') - 1
     return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
 
-inoremap <silent><expr> <TAB>
+inoremap <silent><expr> <tab>
+      \ pumvisible() ? coc#_select_confirm() :
+      \ coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" :
+      \ <SID>check_back_space() ? "\<tab>" :
+      \ coc#refresh()
+
+let g:coc_snippet_next = '<tab>'
+
+inoremap <silent><expr> <C-j>
             \ pumvisible() ? "\<C-n>" :
             \ <SID>check_back_space() ? "\<TAB>" :
             \ coc#refresh()
 
-inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+inoremap <expr><C-k> pumvisible() ? "\<C-p>" : "\<C-h>"
 inoremap <silent><expr> <C-space> coc#refresh()
 
 nnoremap <silent> <leader>gd :YcmCompleter GoTo<CR>
@@ -203,6 +227,9 @@ nmap <leader>gb :Git blame<CR>
 
 "python vim
 autocmd Filetype python map <F5> <Esc><Esc>:w<CR>:!clear;python %<CR>
+
+" blamer
+let g:blamer_enabled = 1
 
 
 
