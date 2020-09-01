@@ -55,6 +55,7 @@ Plug 'w0rp/ale'
 Plug 'preservim/nerdcommenter'
 
 Plug 'jiangmiao/auto-pairs'
+Plug 'rhysd/vim-fixjson'
 
 Plug 'gruvbox-community/gruvbox'
 Plug 'sainnhe/gruvbox-material'
@@ -64,6 +65,9 @@ Plug 'flazz/vim-colorschemes'
 Plug '/home/mpaulson/personal/vim-be-good'
 Plug 'APZelos/blamer.nvim'
 Plug 'terryma/vim-multiple-cursors'
+
+" python
+Plug 'jmcantrell/vim-virtualenv'
 
 call plug#end()
 
@@ -93,6 +97,9 @@ let g:go_auto_sameids = 1
 
 let g:ale_fixers = {
  \ 'javascript': ['eslint'],
+ \ 'javascriptreact': ['eslint'],
+ \ 'json': ['rhysd/vim-fixjson'],
+ \ 'typescriptreact': ['eslint'],
  \ 'typescript': ['tslint', 'eslint'],
  \ 'cs': ['OmniSharp'],
  \ 'python': ['black', 'isort']
@@ -166,8 +173,11 @@ nnoremap <Leader>ev :vsplit ~/.config/nvim/init.vim<CR>
 nnoremap <Leader>sv :so ~/.config/nvim/init.vim<CR>
 nnoremap <Leader>+ :vertical resize +100<CR>
 nnoremap <Leader>- :vertical resize -100<CR>
+nnoremap <Leader>wr :wincmd r<CR>
+nnoremap <Leader>wj :wincmd J<CR>
+nnoremap <Leader>wk :wincmd H<CR>
 nnoremap <Leader>ee oif err != nil {<CR>log.Fatalf("%+v\n", err)<CR>}<CR><esc>kkI<esc>
-nnoremap <Leader>s :.,$s///gc<left><left><left>
+nnoremap <Leader>s :.,$s///gc<left><left><left><left>
 vnoremap J :m '>+1<CR>gv=gv
 vnoremap K :m '<-2<CR>gv=gv
 vnoremap <C-r> "hy:%s/<C-r>h//gc<left><left><left>
