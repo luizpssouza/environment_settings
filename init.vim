@@ -20,7 +20,9 @@ set undofile
 set incsearch
 set termguicolors
 set scrolloff=8
-set inccommand=split
+if has('nvim')
+	set inccommand=split
+endif
 set noshowmode
 set clipboard+=unnamedplus
 
@@ -51,10 +53,11 @@ Plug 'mbbill/undotree'
 Plug 'sheerun/vim-polyglot'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
+Plug 'stsewd/fzf-checkout.vim'
 Plug 'w0rp/ale'
 Plug 'preservim/nerdcommenter'
 
-Plug 'jiangmiao/auto-pairs'
+"Plug 'jiangmiao/auto-pairs'
 Plug 'rhysd/vim-fixjson'
 
 Plug 'gruvbox-community/gruvbox'
@@ -101,7 +104,6 @@ let g:ale_fixers = {
  \ 'json': ['rhysd/vim-fixjson'],
  \ 'typescriptreact': ['eslint'],
  \ 'typescript': ['tslint', 'eslint'],
- \ 'cs': ['OmniSharp'],
  \ 'python': ['black', 'isort']
  \ }
 
@@ -144,9 +146,28 @@ let g:netrw_browse_split = 2
 "let g:vrfr_rg = 'true'
 let g:netrw_banner = 0
 let g:netrw_winsize = 25
+"let g:netrw_fastbrowse = 0
 
 let g:fzf_layout = { 'window': { 'width': 0.8, 'height': 0.8 } }
 let $FZF_DEFAULT_OPTS='--reverse'
+let g:fzf_branch_actions = {
+      \ 'rebase': {
+      \   'prompt': 'Rebase> ',
+      \   'execute': 'echo system("{git} rebase {branch}")',
+      \   'multiple': v:false,
+      \   'keymap': 'ctrl-r',
+      \   'required': ['branch'],
+      \   'confirm': v:false,
+      \ },
+      \ 'track': {
+      \   'prompt': 'Track> ',
+      \   'execute': 'echo system("{git} checkout --track {branch}")',
+      \   'multiple': v:false,
+      \   'keymap': 'ctrl-t',
+      \   'required': ['branch'],
+      \   'confirm': v:false,
+      \ },
+      \}
 
 " OmniSharp Settings
 let g:OmniSharp_highlighting = 2
@@ -155,6 +176,10 @@ let g:OmniSharp_highlighting = 2
 let g:UltiSnipsEditSplit='vertical'
 let g:UltiSnipsSnippetsDir='~/.config/nvim/UltiSnipsSnippets'
 
+
+nnoremap <leader>gc :GBranches<CR>
+nnoremap <leader>ga :Git fetch --all<CR>
+nnoremap Y y$
 nnoremap <leader>prw :CocSearch <C-R>=expand("<cword>")<CR><CR>
 nnoremap <leader>pw :Rg <C-R>=expand("<cword>")<CR><CR>
 nnoremap <leader>phw :h <C-R>=expand("<cword>")<CR><CR>
@@ -237,6 +262,9 @@ nmap <leader>gb :Git blame<CR>
 
 "python vim
 autocmd Filetype python map <F5> <Esc><Esc>:w<CR>:!clear;python %<CR>
+
+"node vim
+autocmd Filetype typescript map <F5> <Esc><Esc>:w<CR>:!yarn start<CR>
 
 " blamer
 let g:blamer_enabled = 1
