@@ -1,3 +1,10 @@
+. ~/tmuxcompletion
+
+# binding keys
+bind '"\C-H":backward-kill-word' #ctrl backspace
+bind 'set completion-ignore-case on'
+
+# poetry
 export PATH="${HOME}/.local/bin:$PATH"
 
 alias upt='sudo apt update'
@@ -9,6 +16,7 @@ export PATH="$PATH:/opt/mssql-tools/bin"
 export PS1='\D{%H.%M.%S}) \[\033[0;32m\]\u\[\033[0;36m\] @ \[\033[0;36m\]\h \w\[\033[0;32m\]$(__git_ps1)\n\[\033[0;32m\]└─\[\033[0;32m\] \$\[\033[0;32m\] ▶\[\033[0m\] '
 
 alias llg='ll | grep'
+alias l='ls -lha'
 
 #tmux
 alias tmux='tmux -2'
@@ -62,7 +70,31 @@ alias mycm='cat ~/.bash_profile | grep '
 
 alias activate='source venv/bin/activate'
 
+# kubernetes
 alias k='kubectl'
+complete -F __start_kubectl k
+alias kubectl-get-current-namespace='kubectl config view --minify --output "jsonpath={..namespace}"; echo;'
+alias k-get-current-namespace='kubectl config view --minify --output "jsonpath={..namespace}"; echo;'
+
+alias kcf='k create -f '
+alias kcn='echo "Type namespace: "; read namespace; k config set-context --current --namespace=$namespace'
+alias kaf='k apply -f '
+
+alias kdp='k delete pod '
+alias kd='k delete '
+
+alias kgp='k get pod -o wide'
+alias kgd='k get deploy -o wide'
+alias kgs='k get service -o wide'
+alias kgi='k get ingress -o wide'
+alias kgn='k get nodes -o wide'
+alias kgnl='k get nodes -o wide --show-labels'
+
+alias ktn='k top node'
+alias ktp='k top pod'
+
+alias kpf='k port-forward '
+alias kex='echo "Pod name: "; read podname; k exec -it $podname /bin/bash'
 
 # wifi utilities
 alias wifisignal='watch -n1 iwconfig'
@@ -70,3 +102,8 @@ alias wifisignal='watch -n1 iwconfig'
 # vim
 alias vim='nvim'
 alias evi='vim ~/.vimrc'
+
+# edit bash profile
+alias ebp='vim ~/.bash_profile && . ~/.bash_profile'
+
+export PATH="$HOME/.poetry/bin:$PATH"

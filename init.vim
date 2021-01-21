@@ -25,6 +25,7 @@ if has('nvim')
 endif
 set noshowmode
 set clipboard+=unnamedplus
+set t_Co=256
 
 
 " Give more space for displaying messages.
@@ -72,6 +73,9 @@ Plug 'terryma/vim-multiple-cursors'
 " python
 Plug 'jmcantrell/vim-virtualenv'
 
+Plug 'JulesWang/css.vim' " only necessary if your Vim version < 7.4
+Plug 'cakebaker/scss-syntax.vim'
+
 call plug#end()
 
 let g:gruvbox_contrast_dark = 'hard'
@@ -104,8 +108,10 @@ let g:ale_fixers = {
  \ 'json': ['rhysd/vim-fixjson'],
  \ 'typescriptreact': ['eslint'],
  \ 'typescript': ['tslint', 'eslint'],
- \ 'python': ['black', 'isort']
+ \ 'python': ['black'],
  \ }
+
+let g:ale_linters = { 'cs': ['OmniSharp'], 'python': ['pylint'] }
 
 let g:ale_sign_error = '❌'
 let g:ale_sign_warning = '⚠️'
@@ -116,6 +122,9 @@ nmap <silent> <C-j> <Plug>(ale_next_wrap)
 
 "coc settings
 let g:coc_global_extensions = [ 'coc-tsserver' ]
+
+"coc scss configuration
+autocmd FileType scss setl iskeyword+=-
 
 "YouCompleteMe settings
 " let g:ycm_filetype_blacklist = {
@@ -146,6 +155,8 @@ let g:netrw_browse_split = 2
 "let g:vrfr_rg = 'true'
 let g:netrw_banner = 0
 let g:netrw_winsize = 25
+"let g:netrw_liststyle = 3 "tree"
+"let g:netrw_localrmdir = 'rm -r'
 "let g:netrw_fastbrowse = 0
 
 let g:fzf_layout = { 'window': { 'width': 0.8, 'height': 0.8 } }
@@ -169,14 +180,13 @@ let g:fzf_branch_actions = {
       \ },
       \}
 
-" OmniSharp Settings
-let g:OmniSharp_highlighting = 2
 
 " ultisnips settings
 let g:UltiSnipsEditSplit='vertical'
 let g:UltiSnipsSnippetsDir='~/.config/nvim/UltiSnipsSnippets'
 
 
+"normal maps
 nnoremap <leader>gc :GBranches<CR>
 nnoremap <leader>ga :Git fetch --all<CR>
 nnoremap Y y$
@@ -201,8 +211,8 @@ nnoremap <Leader>- :vertical resize -100<CR>
 nnoremap <Leader>wr :wincmd r<CR>
 nnoremap <Leader>wj :wincmd J<CR>
 nnoremap <Leader>wk :wincmd H<CR>
-nnoremap <Leader>ee oif err != nil {<CR>log.Fatalf("%+v\n", err)<CR>}<CR><esc>kkI<esc>
 nnoremap <Leader>s :.,$s///gc<left><left><left><left>
+nnoremap <Leader>af <esc>ggVG=<C-o>
 vnoremap J :m '>+1<CR>gv=gv
 vnoremap K :m '<-2<CR>gv=gv
 vnoremap <C-r> "hy:%s/<C-r>h//gc<left><left><left>
@@ -212,6 +222,8 @@ nnoremap <leader>vwm :colorscheme gruvbox<bar>:set background=dark<CR>
 nmap <leader>vtm :highlight Pmenu ctermbg=gray guibg=gray
 
 vnoremap X "_d
+
+" Insert maps
 inoremap jj <esc>
 
 function! s:check_back_space() abort
@@ -234,6 +246,8 @@ inoremap <silent><expr> <C-j>
 
 inoremap <expr><C-k> pumvisible() ? "\<C-p>" : "\<C-h>"
 inoremap <silent><expr> <C-space> coc#refresh()
+inoremap <C-h> <C-w>
+inoremap <C-BS> <C-h>
 
 nnoremap <silent> <leader>gd :YcmCompleter GoTo<CR>
 nnoremap <silent> <leader>gr :YcmCompleter GoToReferences<CR>
@@ -254,22 +268,35 @@ nmap <leader>ac  <Plug>(coc-codeaction)
 " Apply AutoFix to problem on the current line.
 nmap <leader>qf  <Plug>(coc-fix-current)
 
+
+augroup omnisharp_commands
+  autocmd!
+
+  " Show type information automatically when the cursor stops moving.
+  " Note that the type is echoed to the Vim command line, and will overwrite
+  " any other messages in this space including e.g. ALE linting messages.
+  autocmd CursorHold *.cs OmniSharpTypeLookup
+
+  " The following commands are contextual, based on the cursor position.
+  autocmd FileType cs nmap <silent> <buffer> <leader>gd <Plug>(omnisharp_go_to_definition)
+  autocmd FileType cs nmap <silent> <buffer> <Leader>gr <Plug>(omnisharp_find_usages)
+  autocmd FileType cs nmap <silent> <buffer> <Leader>gi <Plug>(omnisharp_find_implementations)
+  autocmd FileType cs nmap <silent> <buffer> <Leader>gy <Plug>(omnisharp_find_symbol)
+  autocmd FileType cs nmap <silent> <buffer> <Leader>qf <Plug>(omnisharp_fix_usings)
+
+  " Contextual code actions (uses fzf, vim-clap, CtrlP or unite.vim selector when available)
+  autocmd FileType cs nmap <silent> <buffer> <Leader>ac <Plug>(omnisharp_code_actions)
+  autocmd FileType cs xmap <silent> <buffer> <Leader>ac <Plug>(omnisharp_code_actions)
+augroup END
+
 " Sweet Sweet FuGITive
 nmap <leader>gh :diffget //3<CR>
 nmap <leader>gu :diffget //2<CR>
 nmap <leader>gs :G<CR>
 nmap <leader>gb :Git blame<CR>
 
-"python vim
-autocmd Filetype python map <F5> <Esc><Esc>:w<CR>:!clear;python %<CR>
-
-"node vim
-autocmd Filetype typescript map <F5> <Esc><Esc>:w<CR>:!yarn start<CR>
-
 " blamer
 let g:blamer_enabled = 1
-
-
 
 fun! TrimWhitespace()
     let l:save = winsaveview()
