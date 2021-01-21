@@ -13,7 +13,7 @@ alias uptupg='upt & upg'
 
 export PATH="$PATH:/opt/mssql-tools/bin"
 
-export PS1='\D{%H.%M.%S}) \[\033[0;32m\]\u\[\033[0;36m\] @ \[\033[0;36m\]\h \w\[\033[0;32m\]$(__git_ps1)\n\[\033[0;32m\]└─\[\033[0;32m\] \$\[\033[0;32m\] ▶\[\033[0m\] '
+export PS1='\D{%H.%M.%S}) \[\033[0;32m\]\u\[\033[0;36m\] @ \[\033[0;36m\]\h \w\[\033[0;32m\]$(__git_ps1) $NODE_VERSION_PS1\n\[\033[0;32m\] └─\[\033[0;32m\] \$\[\033[0;32m\] ▶\[\033[0m\] '
 
 alias llg='ll | grep'
 alias l='ls -lha'
@@ -107,3 +107,17 @@ alias evi='vim ~/.vimrc'
 alias ebp='vim ~/.bash_profile && . ~/.bash_profile'
 
 export PATH="$HOME/.poetry/bin:$PATH"
+
+#nvm
+nvm_start() {
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+    _node_version
+}
+
+_node_version()
+{
+  export NODE_VERSION_PS1="(node:$(node -v))"
+}
+_node_version
