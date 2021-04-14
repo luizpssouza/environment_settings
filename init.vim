@@ -19,10 +19,14 @@ set undodir=~/.vim/undodir
 set undofile
 set incsearch
 set termguicolors
-set scrolloff=8
+set scrolloff=10
+set magic
+set updatetime=500
+
 if has('nvim')
 	set inccommand=split
 endif
+
 set noshowmode
 set clipboard+=unnamedplus
 set t_Co=256
@@ -46,7 +50,11 @@ call plug#begin('~/.vim/plugged')
 Plug 'OmniSharp/omnisharp-vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'neoclide/coc-snippets'
-" Plug 'Valloric/YouCompleteMe', { 'do': './install.py' }
+
+Plug 'prettier/vim-prettier', {
+  \ 'do': 'yarn install',
+  \ 'for': ['javascript', 'typescript', 'css', 'less', 'scss', 'json', 'graphql', 'markdown', 'vue', 'yaml', 'html'] }
+
 Plug 'tweekmonster/gofmt.vim'
 Plug 'tpope/vim-fugitive'
 Plug 'vim-utils/vim-man'
@@ -56,10 +64,11 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'stsewd/fzf-checkout.vim'
 Plug 'w0rp/ale'
-Plug 'preservim/nerdcommenter'
 
-"Plug 'jiangmiao/auto-pairs'
-Plug 'rhysd/vim-fixjson'
+" Debugger Plugins
+Plug 'puremourning/vimspector'
+
+Plug 'szw/vim-maximizer'
 
 Plug 'gruvbox-community/gruvbox'
 Plug 'sainnhe/gruvbox-material'
@@ -67,7 +76,7 @@ Plug 'phanviet/vim-monokai-pro'
 Plug 'vim-airline/vim-airline'
 Plug 'flazz/vim-colorschemes'
 Plug '/home/mpaulson/personal/vim-be-good'
-Plug 'APZelos/blamer.nvim'
+" Plug 'APZelos/blamer.nvim'
 Plug 'terryma/vim-multiple-cursors'
 
 " python
@@ -75,6 +84,9 @@ Plug 'jmcantrell/vim-virtualenv'
 
 Plug 'JulesWang/css.vim' " only necessary if your Vim version < 7.4
 Plug 'cakebaker/scss-syntax.vim'
+
+" markdown
+Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
 
 call plug#end()
 
@@ -105,13 +117,14 @@ let g:go_auto_sameids = 1
 let g:ale_fixers = {
  \ 'javascript': ['eslint'],
  \ 'javascriptreact': ['eslint'],
- \ 'json': ['rhysd/vim-fixjson'],
- \ 'typescriptreact': ['eslint'],
- \ 'typescript': ['tslint', 'eslint'],
+ \ 'typescriptreact': ['prettier'],
  \ 'python': ['black'],
  \ }
+" \ 'typescript': ['prettier', 'eslint'],
 
-let g:ale_linters = { 'cs': ['OmniSharp'], 'python': ['pylint'] }
+let g:prettier#autoformat = 1
+
+let g:ale_linters = { 'cs': ['OmniSharp'], 'python': ['pylint'], 'typescript': ['eslint']}
 
 let g:ale_sign_error = '❌'
 let g:ale_sign_warning = '⚠️'
@@ -126,21 +139,6 @@ let g:coc_global_extensions = [ 'coc-tsserver' ]
 "coc scss configuration
 autocmd FileType scss setl iskeyword+=-
 
-"YouCompleteMe settings
-" let g:ycm_filetype_blacklist = {
-"      \ 'tagbar': 1,
-"      \ 'notes': 1,
-"      \ 'markdown': 1,
-"      \ 'netrw': 1,
-"      \ 'unite': 1,
-"      \ 'text': 1,
-"      \ 'vimwiki': 1,
-"      \ 'pandoc': 1,
-"      \ 'infolog': 1,
-"      \ 'leaderf': 1,
-"      \ 'mail': 1
-"      \}
-
 colorscheme gruvbox
 set background=dark
 
@@ -152,12 +150,10 @@ let loaded_matchparen = 1
 let mapleader = " "
 
 let g:netrw_browse_split = 2
-"let g:vrfr_rg = 'true'
 let g:netrw_banner = 0
-let g:netrw_winsize = 25
-"let g:netrw_liststyle = 3 "tree"
-"let g:netrw_localrmdir = 'rm -r'
-"let g:netrw_fastbrowse = 0
+let g:netrw_winsize = 50
+" let g:netrw_liststyle = 3
+" let g:netrw_keepdir=0
 
 let g:fzf_layout = { 'window': { 'width': 0.8, 'height': 0.8 } }
 let $FZF_DEFAULT_OPTS='--reverse'
@@ -199,7 +195,7 @@ nnoremap <leader>j :wincmd j<CR>
 nnoremap <leader>k :wincmd k<CR>
 nnoremap <leader>l :wincmd l<CR>
 nnoremap <leader>u :UndotreeShow<CR>
-nnoremap <leader>pv :wincmd v<bar> :Ex <bar> :vertical resize 30<CR>
+nnoremap <leader>pv :wincmd v<bar> :Ex <bar> :vertical resize 50<CR>
 nnoremap <Leader>ps :Rg<SPACE>
 nnoremap <Leader>; A;<esc>
 nnoremap <C-p> :GFiles<CR>
@@ -210,12 +206,21 @@ nnoremap <Leader>+ :vertical resize +100<CR>
 nnoremap <Leader>- :vertical resize -100<CR>
 nnoremap <Leader>wr :wincmd r<CR>
 nnoremap <Leader>wj :wincmd J<CR>
-nnoremap <Leader>wk :wincmd H<CR>
+nnoremap <Leader>wk :wincmd K<CR>
+nnoremap <Leader>wl :wincmd L<CR>
+nnoremap <Leader>wh :wincmd H<CR>
 nnoremap <Leader>s :.,$s///gc<left><left><left><left>
 nnoremap <Leader>af <esc>ggVG=<C-o>
+nnoremap <Leader>es :CocCommand snippets.editSnippets<CR>
+nnoremap <Leader>n @q
+nnoremap <Leader>tm :vs +terminal<CR>i
+nnoremap <Leader>cp :let @+ = expand("%")<CR>
+nnoremap <Leader>ca ggVGy
+nnoremap <Leader>m :MaximizerToggle<CR>
+
 vnoremap J :m '>+1<CR>gv=gv
 vnoremap K :m '<-2<CR>gv=gv
-vnoremap <C-r> "hy:%s/<C-r>h//gc<left><left><left>
+vnoremap <C-r> "hy:%s/\C<C-r>h//gc<left><left><left>
 
 " Vim with me
 nnoremap <leader>vwm :colorscheme gruvbox<bar>:set background=dark<CR>
@@ -239,12 +244,12 @@ inoremap <silent><expr> <tab>
 
 let g:coc_snippet_next = '<tab>'
 
-inoremap <silent><expr> <C-j>
-            \ pumvisible() ? "\<C-n>" :
-            \ <SID>check_back_space() ? "\<TAB>" :
-            \ coc#refresh()
+"inoremap <silent><expr> <C-j>
+            "\ pumvisible() ? "\<C-n>" :
+            "\ <SID>check_back_space() ? "\<TAB>" :
+            "\ coc#refresh()
 
-inoremap <expr><C-k> pumvisible() ? "\<C-p>" : "\<C-h>"
+"inoremap <expr><C-k> pumvisible() ? "\<C-p>" : "\<C-h>"
 inoremap <silent><expr> <C-space> coc#refresh()
 inoremap <C-h> <C-w>
 inoremap <C-BS> <C-h>
@@ -262,7 +267,7 @@ nmap <leader>g[ <Plug>(coc-diagnostic-prev)
 nmap <leader>g] <Plug>(coc-diagnostic-next)
 nmap <silent> <leader>gp <Plug>(coc-diagnostic-prev-error)
 nmap <silent> <leader>gn <Plug>(coc-diagnostic-next-error)
-nnoremap <leader>cr :CocRestart
+nnoremap <leader>cr :CocRestart<CR>
 " Remap keys for applying codeAction to the current line.
 nmap <leader>ac  <Plug>(coc-codeaction)
 " Apply AutoFix to problem on the current line.
@@ -290,13 +295,15 @@ augroup omnisharp_commands
 augroup END
 
 " Sweet Sweet FuGITive
-nmap <leader>gh :diffget //3<CR>
-nmap <leader>gu :diffget //2<CR>
+nmap <leader>gl :diffget //3<CR>
+nmap <leader>gh :diffget //2<CR>
 nmap <leader>gs :G<CR>
 nmap <leader>gb :Git blame<CR>
 
+nnoremap <silent> <Leader>cf :clear<bar>silent exec "!cp '%:p' '%:p:h/%:t:r-copy.%:e'"<bar>redraw<bar>echo "Copied " . expand('%:t') . ' to ' . expand('%:t:r') . '-copy.' . expand('%:e')<cr>
+
 " blamer
-let g:blamer_enabled = 1
+" let g:blamer_enabled = 1
 
 fun! TrimWhitespace()
     let l:save = winsaveview()
@@ -318,5 +325,10 @@ function! LinterStatus() abort
     \   all_errors
     \)
 endfunction
+
+if has('nvim')
+  tnoremap <Leader>] <c-\><c-n>
+  tnoremap <Leader>[ <c-\><c-n>
+endif
 
 set statusline=%{LinterStatus()}
