@@ -102,6 +102,7 @@ alias kex='echo "Pod name: "; read podname; k exec -it $podname /bin/bash'
 alias dc='docker-compose'
 alias dcb='docker-compose build'
 alias dcu='docker-compose up -d'
+alias dcbu='docker-compose build && docker-compose up -d'
 alias dcua='docker-compose up'
 alias dcd='docker-compose down'
 
@@ -132,6 +133,7 @@ python_path_default() {
 get_python_path_default() {
     echo $PYTHONPATH
 }
+
 
 #nvm
 nvm_start() {

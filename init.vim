@@ -21,7 +21,8 @@ set incsearch
 set termguicolors
 set scrolloff=10
 set magic
-set updatetime=500
+" set updatetime=750
+set cursorline
 
 if has('nvim')
 	set inccommand=split
@@ -37,7 +38,7 @@ set cmdheight=2
 
 " Having longer updatetime (default is 4000 ms = 4 s) leads to noticeable
 " delays and poor user experience.
-set updatetime=50
+" set updatetime=50
 
 " Don't pass messages to |ins-completion-menu|.
 set shortmess+=c
@@ -47,13 +48,13 @@ highlight ColorColumn ctermbg=0 guibg=lightgrey
 
 call plug#begin('~/.vim/plugged')
 
-Plug 'OmniSharp/omnisharp-vim'
+" Plug 'OmniSharp/omnisharp-vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'neoclide/coc-snippets'
 
 Plug 'prettier/vim-prettier', {
   \ 'do': 'yarn install',
-  \ 'for': ['javascript', 'typescript', 'css', 'less', 'scss', 'json', 'graphql', 'markdown', 'vue', 'yaml', 'html'] }
+  \ 'for': ['javascript', 'typescript', 'typescriptreact', 'css', 'less', 'scss', 'json', 'graphql', 'markdown', 'vue', 'yaml', 'html'] }
 
 Plug 'tweekmonster/gofmt.vim'
 Plug 'tpope/vim-fugitive'
@@ -63,7 +64,7 @@ Plug 'sheerun/vim-polyglot'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'stsewd/fzf-checkout.vim'
-Plug 'w0rp/ale'
+" Plug 'w0rp/ale'
 
 " Debugger Plugins
 Plug 'puremourning/vimspector'
@@ -115,23 +116,25 @@ let g:go_auto_sameids = 1
 "Ale settings
 
 let g:ale_fixers = {
- \ 'javascript': ['eslint'],
- \ 'javascriptreact': ['eslint'],
- \ 'typescriptreact': ['prettier'],
  \ 'python': ['black'],
  \ }
 " \ 'typescript': ['prettier', 'eslint'],
+"  \ 'javascript': ['eslint'],
+"  \ 'javascriptreact': ['eslint'],
+"  \ 'typescriptreact': ['prettier'],
 
 let g:prettier#autoformat = 1
 
-let g:ale_linters = { 'cs': ['OmniSharp'], 'python': ['pylint'], 'typescript': ['eslint']}
+" let g:ale_linters = { 'cs': ['OmniSharp'], 'python': ['pylint'], 'typescript': ['eslint']}
 
 let g:ale_sign_error = '❌'
 let g:ale_sign_warning = '⚠️'
 let g:ale_fix_on_save = 1
 
-nmap <silent> <C-k> <Plug>(ale_previous_wrap)
-nmap <silent> <C-j> <Plug>(ale_next_wrap)
+" nmap <silent> <C-k> <Plug>(ale_previous_wrap)
+" nmap <silent> <C-j> <Plug>(ale_next_wrap)
+nmap <silent> <C-j> <Plug>(coc-diagnostic-next-error)
+nmap <silent> <C-k> <Plug>(coc-diagnostic-prev-error)
 
 "coc settings
 let g:coc_global_extensions = [ 'coc-tsserver' ]
@@ -209,7 +212,7 @@ nnoremap <Leader>wj :wincmd J<CR>
 nnoremap <Leader>wk :wincmd K<CR>
 nnoremap <Leader>wl :wincmd L<CR>
 nnoremap <Leader>wh :wincmd H<CR>
-nnoremap <Leader>s :.,$s///gc<left><left><left><left>
+nnoremap <Leader>s :%s///gc<left><left><left><left>
 nnoremap <Leader>af <esc>ggVG=<C-o>
 nnoremap <Leader>es :CocCommand snippets.editSnippets<CR>
 nnoremap <Leader>n @q
@@ -217,6 +220,7 @@ nnoremap <Leader>tm :vs +terminal<CR>i
 nnoremap <Leader>cp :let @+ = expand("%")<CR>
 nnoremap <Leader>ca ggVGy
 nnoremap <Leader>m :MaximizerToggle<CR>
+nnoremap <CR> :nohl<CR>
 
 vnoremap J :m '>+1<CR>gv=gv
 vnoremap K :m '<-2<CR>gv=gv
@@ -313,22 +317,22 @@ endfun
 
 autocmd BufWritePre * :call TrimWhitespace()
 
-function! LinterStatus() abort
-    let l:counts = ale#statusline#Count(bufnr(''))
-
-    let l:all_errors = l:counts.error + l:counts.style_error
-    let l:all_non_errors = l:counts.total - l:all_errors
-
-    return l:counts.total == 0 ? 'OK' : printf(
-    \   '%dW %dE',
-    \   all_non_errors,
-    \   all_errors
-    \)
-endfunction
+" function! LinterStatus() abort
+"     let l:counts = ale#statusline#Count(bufnr(''))
+"
+"     let l:all_errors = l:counts.error + l:counts.style_error
+"     let l:all_non_errors = l:counts.total - l:all_errors
+"
+"     return l:counts.total == 0 ? 'OK' : printf(
+"     \   '%dW %dE',
+"     \   all_non_errors,
+"     \   all_errors
+"     \)
+" endfunction
 
 if has('nvim')
   tnoremap <Leader>] <c-\><c-n>
   tnoremap <Leader>[ <c-\><c-n>
 endif
 
-set statusline=%{LinterStatus()}
+" set statusline=%{LinterStatus()}
