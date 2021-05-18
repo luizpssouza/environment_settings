@@ -1,5 +1,3 @@
-syntax on
-
 set guicursor=
 set noshowmatch
 set relativenumber
@@ -36,21 +34,20 @@ set t_Co=256
 " Give more space for displaying messages.
 set cmdheight=2
 
-" Having longer updatetime (default is 4000 ms = 4 s) leads to noticeable
-" delays and poor user experience.
-" set updatetime=50
-
-" Don't pass messages to |ins-completion-menu|.
 set shortmess+=c
+set completeopt=menuone,noselect
 
 set colorcolumn=80
 highlight ColorColumn ctermbg=0 guibg=lightgrey
 
 call plug#begin('~/.vim/plugged')
 
-" Plug 'OmniSharp/omnisharp-vim'
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'neoclide/coc-snippets'
+Plug 'neovim/nvim-lspconfig'
+Plug 'hrsh7th/nvim-compe'
+Plug 'SirVer/ultisnips'
+Plug 'hrsh7th/vim-vsnip'
+Plug 'hrsh7th/vim-vsnip-integ'
+Plug 'honza/vim-snippets'
 
 Plug 'prettier/vim-prettier', {
   \ 'do': 'yarn install',
@@ -64,9 +61,6 @@ Plug 'sheerun/vim-polyglot'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'stsewd/fzf-checkout.vim'
-" Plug 'w0rp/ale'
-
-" Debugger Plugins
 Plug 'puremourning/vimspector'
 
 Plug 'szw/vim-maximizer'
@@ -113,34 +107,69 @@ let g:go_highlight_variable_declarations = 1
 let g:go_auto_sameids = 1
 
 
-"Ale settings
+lua << EOF
+local nvim_lsp = require('lspconfig')
+local on_attach = function(client, bufnr)
+  local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+  local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
 
-let g:ale_fixers = {
- \ 'python': ['black'],
- \ }
-" \ 'typescript': ['prettier', 'eslint'],
-"  \ 'javascript': ['eslint'],
-"  \ 'javascriptreact': ['eslint'],
-"  \ 'typescriptreact': ['prettier'],
+  buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+  -- Set autocommands conditional on server_capabilities
+  if client.resolved_capabilities.document_highlight then
+    vim.api.nvim_exec([[
+      hi LspReferenceRead cterm=bold ctermbg=red guibg=Black
+      hi LspReferenceText cterm=bold ctermbg=red guibg=Black
+      hi LspReferenceWrite cterm=bold ctermbg=red guibg=Black
+      augroup lsp_document_highlight
+        autocmd! * <buffer>
+        autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()
+        autocmd CursorMoved <buffer> lua vim.lsp.buf.clear_references()
+      augroup END
+    ]], false)
+  end
+end
+
+-- Use a loop to conveniently both setup defined servers
+-- and map buffer local keybindings when the language server attaches
+local servers = { "pyright", "rust_analyzer", "tsserver" }
+for _, lsp in ipairs(servers) do
+  nvim_lsp[lsp].setup { on_attach = on_attach }
+end
+EOF
+
+let g:compe = {}
+let g:compe.enabled = v:true
+let g:compe.autocomplete = v:true
+let g:compe.debug = v:false
+let g:compe.min_length = 1
+let g:compe.preselect = 'enable'
+let g:compe.throttle_time = 80
+let g:compe.source_timeout = 200
+let g:compe.incomplete_delay = 400
+let g:compe.max_abbr_width = 100
+let g:compe.max_kind_width = 100
+let g:compe.max_menu_width = 100
+let g:compe.documentation = v:true
+
+let g:compe.source = {}
+let g:compe.source.path = v:true
+let g:compe.source.buffer = v:true
+let g:compe.source.calc = v:true
+let g:compe.source.nvim_lsp = v:true
+let g:compe.source.nvim_lua = v:true
+let g:compe.source.vsnip = v:true
+let g:compe.source.ultisnips = v:true
+" highlight link CompeDocumentation NormalFloat
 
 let g:prettier#autoformat = 1
+let g:completion_enable_snippet = 'UltiSnips'
+let g:completion_matching_ignore_case = 0
+let g:completion_matching_smart_case = 1
+let g:completion_sorting = "length"
+let g:completion_matching_strategy_list = ['exact', 'substring', 'fuzzy']
 
-" let g:ale_linters = { 'cs': ['OmniSharp'], 'python': ['pylint'], 'typescript': ['eslint']}
-
-let g:ale_sign_error = '❌'
-let g:ale_sign_warning = '⚠️'
-let g:ale_fix_on_save = 1
-
-" nmap <silent> <C-k> <Plug>(ale_previous_wrap)
-" nmap <silent> <C-j> <Plug>(ale_next_wrap)
-nmap <silent> <C-j> <Plug>(coc-diagnostic-next-error)
-nmap <silent> <C-k> <Plug>(coc-diagnostic-prev-error)
-
-"coc settings
-let g:coc_global_extensions = [ 'coc-tsserver' ]
-
-"coc scss configuration
-autocmd FileType scss setl iskeyword+=-
+imap <expr> <C-<Space>> asd;lfk
 
 colorscheme gruvbox
 set background=dark
@@ -186,6 +215,10 @@ let g:UltiSnipsSnippetsDir='~/.config/nvim/UltiSnipsSnippets'
 
 
 "normal maps
+nnoremap <leader>h :wincmd h<CR>
+nnoremap <leader>j :wincmd j<CR>
+nnoremap <leader>k :wincmd k<CR>
+nnoremap <leader>l :wincmd l<CR>
 nnoremap <leader>gc :GBranches<CR>
 nnoremap <leader>ga :Git fetch --all<CR>
 nnoremap Y y$
@@ -193,10 +226,6 @@ nnoremap <leader>prw :CocSearch <C-R>=expand("<cword>")<CR><CR>
 nnoremap <leader>pw :Rg <C-R>=expand("<cword>")<CR><CR>
 nnoremap <leader>phw :h <C-R>=expand("<cword>")<CR><CR>
 nnoremap <leader>y "*y
-nnoremap <leader>h :wincmd h<CR>
-nnoremap <leader>j :wincmd j<CR>
-nnoremap <leader>k :wincmd k<CR>
-nnoremap <leader>l :wincmd l<CR>
 nnoremap <leader>u :UndotreeShow<CR>
 nnoremap <leader>pv :wincmd v<bar> :Ex <bar> :vertical resize 50<CR>
 nnoremap <Leader>ps :Rg<SPACE>
@@ -214,100 +243,55 @@ nnoremap <Leader>wl :wincmd L<CR>
 nnoremap <Leader>wh :wincmd H<CR>
 nnoremap <Leader>s :%s///gc<left><left><left><left>
 nnoremap <Leader>af <esc>ggVG=<C-o>
-nnoremap <Leader>es :CocCommand snippets.editSnippets<CR>
 nnoremap <Leader>n @q
 nnoremap <Leader>tm :vs +terminal<CR>i
 nnoremap <Leader>cp :let @+ = expand("%")<CR>
 nnoremap <Leader>ca ggVGy
 nnoremap <Leader>m :MaximizerToggle<CR>
-nnoremap <CR> :nohl<CR>
+nnoremap <silent> <Leader>cf :clear<bar>silent exec "!cp '%:p' '%:p:h/%:t:r-copy.%:e'"<bar>redraw<bar>echo "Copied " . expand('%:t') . ' to ' . expand('%:t:r') . '-copy.' . expand('%:e')<cr>
+nmap <leader>gl :diffget //3<CR>
+nmap <leader>gh :diffget //2<CR>
+nmap <leader>gs :G<CR>
+nmap <leader>gb :Git blame<CR>
+inoremap <silent><expr> <C-Space> compe#complete()
+inoremap <silent><expr> <CR>      compe#confirm('<CR>')
+inoremap <silent><expr> <C-e>     compe#close('<C-e>')
+inoremap <silent><expr> <C-f>     compe#scroll({ 'delta': +4 })
+inoremap <silent><expr> <C-d>     compe#scroll({ 'delta': -4 })
+nnoremap <silent> <leader>gD <Cmd>lua vim.lsp.buf.declaration()<CR>
+nnoremap <silent> <leader>gd <Cmd>lua vim.lsp.buf.definition()<CR>
+nnoremap <silent> <leader>K <Cmd>lua vim.lsp.buf.hover()<CR>
+nnoremap <silent> <leader>gi <cmd>lua vim.lsp.buf.implementation()<CR>
+nnoremap <silent> <C-k> <cmd>lua vim.lsp.buf.signature_help()<CR>
+nnoremap <silent> <space>wa <cmd>lua vim.lsp.buf.add_workspace_folder()<CR>
+nnoremap <silent> <space>wr <cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>
+nnoremap <silent> <space>wl <cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>
+nnoremap <silent> <space>D <cmd>lua vim.lsp.buf.type_definition()<CR>
+nnoremap <silent> <space>rn <cmd>lua vim.lsp.buf.rename()<CR>
+nnoremap <silent> <leader>ac <cmd>lua vim.lsp.buf.code_action()<CR>
+nnoremap <silent> gr <cmd>lua vim.lsp.buf.references()<CR>
+nnoremap <silent> <space>e <cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>
+nnoremap <silent> [d <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>
+nnoremap <silent> ]d <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
+nnoremap <silent> <space>q <cmd>lua vim.lsp.diagnostic.set_loclist()<CR>
 
+" visual maps
 vnoremap J :m '>+1<CR>gv=gv
 vnoremap K :m '<-2<CR>gv=gv
 vnoremap <C-r> "hy:%s/\C<C-r>h//gc<left><left><left>
-
-" Vim with me
-nnoremap <leader>vwm :colorscheme gruvbox<bar>:set background=dark<CR>
-nmap <leader>vtm :highlight Pmenu ctermbg=gray guibg=gray
-
 vnoremap X "_d
 
 " Insert maps
 inoremap jj <esc>
+"resolving control backspaces
+inoremap <C-h> <C-w>
+inoremap <C-BS> <C-h>
 
 function! s:check_back_space() abort
     let col = col('.') - 1
     return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
 
-inoremap <silent><expr> <tab>
-      \ pumvisible() ? coc#_select_confirm() :
-      \ coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" :
-      \ <SID>check_back_space() ? "\<tab>" :
-      \ coc#refresh()
-
-let g:coc_snippet_next = '<tab>'
-
-"inoremap <silent><expr> <C-j>
-            "\ pumvisible() ? "\<C-n>" :
-            "\ <SID>check_back_space() ? "\<TAB>" :
-            "\ coc#refresh()
-
-"inoremap <expr><C-k> pumvisible() ? "\<C-p>" : "\<C-h>"
-inoremap <silent><expr> <C-space> coc#refresh()
-inoremap <C-h> <C-w>
-inoremap <C-BS> <C-h>
-
-nnoremap <silent> <leader>gd :YcmCompleter GoTo<CR>
-nnoremap <silent> <leader>gr :YcmCompleter GoToReferences<CR>
-
-" GoTo code navigation.
-nmap <leader>gd <Plug>(coc-definition)
-nmap <leader>gy <Plug>(coc-type-definition)
-nmap <leader>gi <Plug>(coc-implementation)
-nmap <leader>gr <Plug>(coc-references)
-nmap <leader>rr <Plug>(coc-rename)
-nmap <leader>g[ <Plug>(coc-diagnostic-prev)
-nmap <leader>g] <Plug>(coc-diagnostic-next)
-nmap <silent> <leader>gp <Plug>(coc-diagnostic-prev-error)
-nmap <silent> <leader>gn <Plug>(coc-diagnostic-next-error)
-nnoremap <leader>cr :CocRestart<CR>
-" Remap keys for applying codeAction to the current line.
-nmap <leader>ac  <Plug>(coc-codeaction)
-" Apply AutoFix to problem on the current line.
-nmap <leader>qf  <Plug>(coc-fix-current)
-
-
-augroup omnisharp_commands
-  autocmd!
-
-  " Show type information automatically when the cursor stops moving.
-  " Note that the type is echoed to the Vim command line, and will overwrite
-  " any other messages in this space including e.g. ALE linting messages.
-  autocmd CursorHold *.cs OmniSharpTypeLookup
-
-  " The following commands are contextual, based on the cursor position.
-  autocmd FileType cs nmap <silent> <buffer> <leader>gd <Plug>(omnisharp_go_to_definition)
-  autocmd FileType cs nmap <silent> <buffer> <Leader>gr <Plug>(omnisharp_find_usages)
-  autocmd FileType cs nmap <silent> <buffer> <Leader>gi <Plug>(omnisharp_find_implementations)
-  autocmd FileType cs nmap <silent> <buffer> <Leader>gy <Plug>(omnisharp_find_symbol)
-  autocmd FileType cs nmap <silent> <buffer> <Leader>qf <Plug>(omnisharp_fix_usings)
-
-  " Contextual code actions (uses fzf, vim-clap, CtrlP or unite.vim selector when available)
-  autocmd FileType cs nmap <silent> <buffer> <Leader>ac <Plug>(omnisharp_code_actions)
-  autocmd FileType cs xmap <silent> <buffer> <Leader>ac <Plug>(omnisharp_code_actions)
-augroup END
-
-" Sweet Sweet FuGITive
-nmap <leader>gl :diffget //3<CR>
-nmap <leader>gh :diffget //2<CR>
-nmap <leader>gs :G<CR>
-nmap <leader>gb :Git blame<CR>
-
-nnoremap <silent> <Leader>cf :clear<bar>silent exec "!cp '%:p' '%:p:h/%:t:r-copy.%:e'"<bar>redraw<bar>echo "Copied " . expand('%:t') . ' to ' . expand('%:t:r') . '-copy.' . expand('%:e')<cr>
-
-" blamer
-" let g:blamer_enabled = 1
 
 fun! TrimWhitespace()
     let l:save = winsaveview()
@@ -317,22 +301,7 @@ endfun
 
 autocmd BufWritePre * :call TrimWhitespace()
 
-" function! LinterStatus() abort
-"     let l:counts = ale#statusline#Count(bufnr(''))
-"
-"     let l:all_errors = l:counts.error + l:counts.style_error
-"     let l:all_non_errors = l:counts.total - l:all_errors
-"
-"     return l:counts.total == 0 ? 'OK' : printf(
-"     \   '%dW %dE',
-"     \   all_non_errors,
-"     \   all_errors
-"     \)
-" endfunction
-
 if has('nvim')
   tnoremap <Leader>] <c-\><c-n>
   tnoremap <Leader>[ <c-\><c-n>
 endif
-
-" set statusline=%{LinterStatus()}
