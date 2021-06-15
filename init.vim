@@ -48,7 +48,7 @@ highlight ColorColumn ctermbg=0 guibg=lightgrey
 
 call plug#begin('~/.vim/plugged')
 
-" Plug 'OmniSharp/omnisharp-vim'
+Plug 'OmniSharp/omnisharp-vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'neoclide/coc-snippets'
 
@@ -64,7 +64,7 @@ Plug 'sheerun/vim-polyglot'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'stsewd/fzf-checkout.vim'
-" Plug 'w0rp/ale'
+Plug 'w0rp/ale'
 
 " Debugger Plugins
 Plug 'puremourning/vimspector'
@@ -123,9 +123,9 @@ let g:ale_fixers = {
 "  \ 'javascriptreact': ['eslint'],
 "  \ 'typescriptreact': ['prettier'],
 
-let g:prettier#autoformat = 1
+"let g:prettier#autoformat = 1
 
-" let g:ale_linters = { 'cs': ['OmniSharp'], 'python': ['pylint'], 'typescript': ['eslint']}
+let g:ale_linters = { 'cs': ['OmniSharp'] }
 
 let g:ale_sign_error = '❌'
 let g:ale_sign_warning = '⚠️'
@@ -221,6 +221,8 @@ nnoremap <Leader>cp :let @+ = expand("%")<CR>
 nnoremap <Leader>ca ggVGy
 nnoremap <Leader>m :MaximizerToggle<CR>
 nnoremap <CR> :nohl<CR>
+vnoremap < <gv
+vnoremap > >gv
 
 vnoremap J :m '>+1<CR>gv=gv
 vnoremap K :m '<-2<CR>gv=gv

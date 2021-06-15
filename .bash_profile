@@ -35,6 +35,8 @@ alias gau='git add --update'
 alias gb='git branch'
 alias gba='git branch -a'
 alias gbd='git branch --delete '
+alias gbdall='git branch --merged| egrep -v "(^\*|master|main|develop|release)" | xargs git branch -d'
+alias gbm='git branch -m'
 alias gc='git commit'
 alias gca='git commit --amend'
 alias gcm='git commit --message'
@@ -124,6 +126,9 @@ export PATH="$HOME/.poetry/bin:$PATH"
 alias po="poetry"
 alias pos="python_path_default; poetry shell;"
 
+# yarn
+alias yarntestall="yarn lint && yarn test && yarn build"
+
 # python
 python_path_default() {
     export PYTHONPATH=$(pwd)
@@ -159,3 +164,8 @@ ipv6_disable() {
 }
 
 alias clip="xclip -selection c"
+
+#network
+alias ip4='dig @resolver4.opendns.com myip.opendns.com +short -4'
+alias ip6='dig @ns1.google.com TXT o-o.myaddr.l.google.com +short -6'
+alias cip4='ip4 | clip'
