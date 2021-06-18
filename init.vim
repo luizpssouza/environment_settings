@@ -397,6 +397,8 @@ nnoremap <silent> <space>q <cmd>lua vim.lsp.diagnostic.set_loclist()<CR>
 nnoremap <silent> <leader>qf lua vim.lsp.buf.code_action()<esc><C-o>
 nnoremap <leader>af mF:%!eslint_d --stdin --fix-to-stdout --stdin-filename %<CR>`F:w<CR>
 nnoremap <CR> :nohl<CR>
+vnoremap < <gv
+vnoremap > >gv
 
 nmap <leader>qq	<Plug>(qf_qf_toggle)
 nmap gn		<Plug>(qf_qf_next)
