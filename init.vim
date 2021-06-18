@@ -83,6 +83,8 @@ Plug 'cakebaker/scss-syntax.vim'
 " markdown
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
 
+Plug 'romainl/vim-qf'
+
 call plug#end()
 
 let g:gruvbox_contrast_dark = 'hard'
@@ -136,6 +138,124 @@ local servers = { "pyright", "rust_analyzer", "tsserver" }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup { on_attach = on_attach }
 end
+EOF
+
+lua << EOF
+local nvim_lsp = require("lspconfig")
+
+local format_async = function(err, _, result, _, bufnr)
+    if err ~= nil or result == nil then return end
+    if not vim.api.nvim_buf_get_option(bufnr, "modified") then
+        local view = vim.fn.winsaveview()
+        vim.lsp.util.apply_text_edits(result, bufnr)
+        vim.fn.winrestview(view)
+        if bufnr == vim.api.nvim_get_current_buf() then
+            vim.api.nvim_command("noautocmd :update")
+        end
+    end
+end
+
+
+vim.lsp.handlers["textDocument/formatting"] = format_async
+
+_G.lsp_organize_imports = function()
+    local params = {
+        command = "_typescript.organizeImports",
+        arguments = {vim.api.nvim_buf_get_name(0)},
+        title = ""
+    }
+    vim.lsp.buf.execute_command(params)
+end
+
+local on_attach = function(client, bufnr)
+    local buf_map = vim.api.nvim_buf_set_keymap
+    vim.cmd("command! LspDef lua vim.lsp.buf.definition()")
+    vim.cmd("command! LspFormatting lua vim.lsp.buf.formatting()")
+    vim.cmd("command! LspCodeAction lua vim.lsp.buf.code_action()")
+    vim.cmd("command! LspHover lua vim.lsp.buf.hover()")
+    vim.cmd("command! LspRename lua vim.lsp.buf.rename()")
+    vim.cmd("command! LspOrganize lua lsp_organize_imports()")
+    vim.cmd("command! LspRefs lua vim.lsp.buf.references()")
+    vim.cmd("command! LspTypeDef lua vim.lsp.buf.type_definition()")
+    vim.cmd("command! LspImplementation lua vim.lsp.buf.implementation()")
+    vim.cmd("command! LspDiagPrev lua vim.lsp.diagnostic.goto_prev()")
+    vim.cmd("command! LspDiagNext lua vim.lsp.diagnostic.goto_next()")
+    vim.cmd(
+        "command! LspDiagLine lua vim.lsp.diagnostic.show_line_diagnostics()")
+    vim.cmd("command! LspSignatureHelp lua vim.lsp.buf.signature_help()")
+
+    if client.resolved_capabilities.document_formatting then
+        vim.api.nvim_exec([[
+         augroup LspAutocommands
+             autocmd! * <buffer>
+             autocmd BufWritePost <buffer> LspFormatting
+         augroup END
+         ]], true)
+    end
+end
+
+nvim_lsp.tsserver.setup {
+    on_attach = function(client)
+        client.resolved_capabilities.document_formatting = false
+        on_attach(client)
+    end
+}
+
+local filetypes = {
+    typescript = "eslint",
+    typescriptreact = "eslint",
+}
+
+local linters = {
+    eslint = {
+        sourceName = "eslint",
+        command = "eslint_d",
+        rootPatterns = {".eslintrc.js", "package.json"},
+        debounce = 100,
+        args = {"--stdin", "--stdin-filename", "%filepath", "--format", "json"},
+        parseJson = {
+            errorsRoot = "[0].messages",
+            line = "line",
+            column = "column",
+            endLine = "endLine",
+            endColumn = "endColumn",
+            message = "${message} [${ruleId}]",
+            security = "severity"
+        },
+        securities = {[2] = "error", [1] = "warning"}
+    }
+}
+
+
+local formatters = {
+    prettier = {command = "prettier", args = {"--stdin-filepath", "%filepath"}}
+}
+
+local formatFiletypes = {
+    typescript = "prettier",
+    typescriptreact = "prettier"
+}
+
+nvim_lsp.diagnosticls.setup {
+    on_attach = on_attach,
+    filetypes = vim.tbl_keys(filetypes),
+    init_options = {
+        filetypes = filetypes,
+        linters = linters,
+        formatters = formatters,
+        formatFiletypes = formatFiletypes
+    }
+}
+
+--local custom_codeAction_callback = function (a, b, action)
+--  print(vim.inspect(a))
+--  print(vim.inspect(b))
+--  print(vim.inspect(action))
+--  return action
+--end
+--
+--vim.lsp.handlers['textDocument/codeAction'] = custom_codeAction_callback
+
 EOF
 
 let g:compe = {}
@@ -242,7 +362,7 @@ nnoremap <Leader>wk :wincmd K<CR>
 nnoremap <Leader>wl :wincmd L<CR>
 nnoremap <Leader>wh :wincmd H<CR>
 nnoremap <Leader>s :%s///gc<left><left><left><left>
-nnoremap <Leader>af <esc>ggVG=<C-o>
+" nnoremap <Leader>af <esc>ggVG=<C-o>
 nnoremap <Leader>n @q
 nnoremap <Leader>tm :vs +terminal<CR>i
 nnoremap <Leader>cp :let @+ = expand("%")<CR>
@@ -254,15 +374,15 @@ nmap <leader>gh :diffget //2<CR>
 nmap <leader>gs :G<CR>
 nmap <leader>gb :Git blame<CR>
 inoremap <silent><expr> <C-Space> compe#complete()
-inoremap <silent><expr> <CR>      compe#confirm('<CR>')
-inoremap <silent><expr> <C-e>     compe#close('<C-e>')
-inoremap <silent><expr> <C-f>     compe#scroll({ 'delta': +4 })
-inoremap <silent><expr> <C-d>     compe#scroll({ 'delta': -4 })
+inoremap <silent><expr> <CR>  compe#confirm('<CR>')
+inoremap <silent><expr> <C-e> compe#close('<C-e>')
+inoremap <silent><expr> <C-f> compe#scroll({ 'delta': +4 })
+inoremap <silent><expr> <C-d> compe#scroll({ 'delta': -4 })
 nnoremap <silent> <leader>gD <Cmd>lua vim.lsp.buf.declaration()<CR>
 nnoremap <silent> <leader>gd <Cmd>lua vim.lsp.buf.definition()<CR>
 nnoremap <silent> <leader>K <Cmd>lua vim.lsp.buf.hover()<CR>
 nnoremap <silent> <leader>gi <cmd>lua vim.lsp.buf.implementation()<CR>
-nnoremap <silent> <C-k> <cmd>lua vim.lsp.buf.signature_help()<CR>
+nnoremap <silent> <C-l> <cmd>lua vim.lsp.buf.signature_help()<CR>
 nnoremap <silent> <space>wa <cmd>lua vim.lsp.buf.add_workspace_folder()<CR>
 nnoremap <silent> <space>wr <cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>
 nnoremap <silent> <space>wl <cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>
@@ -271,9 +391,16 @@ nnoremap <silent> <space>rn <cmd>lua vim.lsp.buf.rename()<CR>
 nnoremap <silent> <leader>ac <cmd>lua vim.lsp.buf.code_action()<CR>
 nnoremap <silent> gr <cmd>lua vim.lsp.buf.references()<CR>
 nnoremap <silent> <space>e <cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>
-nnoremap <silent> [d <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>
-nnoremap <silent> ]d <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
+nnoremap <silent> <C-k> <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>
+nnoremap <silent> <C-j> <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
 nnoremap <silent> <space>q <cmd>lua vim.lsp.diagnostic.set_loclist()<CR>
+nnoremap <silent> <leader>qf lua vim.lsp.buf.code_action()<esc><C-o>
+nnoremap <leader>af mF:%!eslint_d --stdin --fix-to-stdout --stdin-filename %<CR>`F:w<CR>
+nnoremap <CR> :nohl<CR>
+
+nmap <leader>qq	<Plug>(qf_qf_toggle)
+nmap gn		<Plug>(qf_qf_next)
+nmap gp		<Plug>(qf_qf_previous)
 
 " visual maps
 vnoremap J :m '>+1<CR>gv=gv
