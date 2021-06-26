@@ -19,7 +19,7 @@ set incsearch
 set termguicolors
 set scrolloff=10
 set magic
-" set updatetime=750
+set updatetime=750
 set cursorline
 
 if has('nvim')
@@ -44,6 +44,9 @@ call plug#begin('~/.vim/plugged')
 
 Plug 'neovim/nvim-lspconfig'
 Plug 'hrsh7th/nvim-compe'
+Plug 'jose-elias-alvarez/nvim-lsp-ts-utils'
+Plug 'jose-elias-alvarez/null-ls.nvim'
+Plug 'nvim-lua/plenary.nvim'
 Plug 'SirVer/ultisnips'
 Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/vim-vsnip-integ'
@@ -76,6 +79,7 @@ Plug 'terryma/vim-multiple-cursors'
 
 " python
 Plug 'jmcantrell/vim-virtualenv'
+Plug 'w0rp/ale'
 
 Plug 'JulesWang/css.vim' " only necessary if your Vim version < 7.4
 Plug 'cakebaker/scss-syntax.vim'
@@ -86,6 +90,18 @@ Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': 
 Plug 'romainl/vim-qf'
 
 call plug#end()
+
+let g:ale_sign_error = '✘'
+let g:ale_sign_warning = '⚠'
+let g:ale_disable_lsp = 1
+
+highlight ALEErrorSign ctermbg=NONE ctermfg=red
+highlight ALEWarningSign ctermbg=NONE ctermfg=yellow
+
+let g:ale_fixers = {
+\  'typescript': ['prettier'],
+\}
+let g:ale_fix_on_save = 1
 
 let g:gruvbox_contrast_dark = 'hard'
 
@@ -111,37 +127,9 @@ let g:go_auto_sameids = 1
 
 lua << EOF
 local nvim_lsp = require('lspconfig')
-local on_attach = function(client, bufnr)
-  local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
-  local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
 
-  buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
-
-  -- Set autocommands conditional on server_capabilities
-  if client.resolved_capabilities.document_highlight then
-    vim.api.nvim_exec([[
-      hi LspReferenceRead cterm=bold ctermbg=red guibg=Black
-      hi LspReferenceText cterm=bold ctermbg=red guibg=Black
-      hi LspReferenceWrite cterm=bold ctermbg=red guibg=Black
-      augroup lsp_document_highlight
-        autocmd! * <buffer>
-        autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()
-        autocmd CursorMoved <buffer> lua vim.lsp.buf.clear_references()
-      augroup END
-    ]], false)
-  end
-end
-
--- Use a loop to conveniently both setup defined servers
--- and map buffer local keybindings when the language server attaches
-local servers = { "pyright", "rust_analyzer", "tsserver" }
-for _, lsp in ipairs(servers) do
-  nvim_lsp[lsp].setup { on_attach = on_attach }
-end
-EOF
-
-lua << EOF
-local nvim_lsp = require("lspconfig")
+-- enable null-ls integration (optional)
+require("null-ls").setup {}
 
 local format_async = function(err, _, result, _, bufnr)
     if err ~= nil or result == nil then return end
@@ -154,8 +142,6 @@ local format_async = function(err, _, result, _, bufnr)
         end
     end
 end
-
-
 vim.lsp.handlers["textDocument/formatting"] = format_async
 
 _G.lsp_organize_imports = function()
@@ -166,7 +152,6 @@ _G.lsp_organize_imports = function()
     }
     vim.lsp.buf.execute_command(params)
 end
-
 local on_attach = function(client, bufnr)
     local buf_map = vim.api.nvim_buf_set_keymap
     vim.cmd("command! LspDef lua vim.lsp.buf.definition()")
@@ -183,7 +168,6 @@ local on_attach = function(client, bufnr)
     vim.cmd(
         "command! LspDiagLine lua vim.lsp.diagnostic.show_line_diagnostics()")
     vim.cmd("command! LspSignatureHelp lua vim.lsp.buf.signature_help()")
-
     if client.resolved_capabilities.document_formatting then
         vim.api.nvim_exec([[
          augroup LspAutocommands
@@ -192,12 +176,70 @@ local on_attach = function(client, bufnr)
          augroup END
          ]], true)
     end
+    local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+    local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+
+    buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+    -- Set autocommands conditional on server_capabilities
+    if client.resolved_capabilities.document_highlight then
+      vim.api.nvim_exec([[
+        hi LspReferenceRead cterm=bold ctermbg=red gui=bold guifg=#ffb300
+        hi LspReferenceText cterm=bold ctermbg=red gui=bold guifg=#ffb300
+        hi LspReferenceWrite cterm=bold ctermbg=red gui=bold guifg=#ffb300
+        augroup lsp_document_highlight
+          autocmd! * <buffer>
+          autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()
+          autocmd CursorMoved <buffer> lua vim.lsp.buf.clear_references()
+        augroup END
+      ]], false)
+    end
 end
 
 nvim_lsp.tsserver.setup {
     on_attach = function(client)
         client.resolved_capabilities.document_formatting = false
         on_attach(client)
+
+        -- define an alias
+        vim.cmd("command! -buffer Formatting lua vim.lsp.buf.formatting()")
+
+        -- format on save
+        vim.cmd("autocmd BufWritePost <buffer> lua vim.lsp.buf.formatting()")
+
+        local ts_utils = require("nvim-lsp-ts-utils")
+
+        -- defaults
+        ts_utils.setup {
+            debug = true,
+            disable_commands = false,
+            enable_import_on_completion = true,
+            import_all_timeout = 5000, -- ms
+
+            -- eslint
+            eslint_enable_code_actions = true,
+            eslint_enable_disable_comments = true,
+            eslint_bin = "eslint_d",
+            eslint_config_fallback = nil,
+            eslint_enable_diagnostics = true,
+
+            -- formatting
+            enable_formatting = true,
+            formatter = "eslint_d",
+            formatter_config_fallback = nil,
+
+            -- parentheses completion
+            complete_parens = true,
+            signature_help_in_parens = true,
+
+            -- update imports on file move
+            update_imports_on_move = false,
+            require_confirmation_on_move = true,
+            watch_dir = nil,
+        }
+
+        -- required to fix code action ranges
+        ts_utils.setup_client(client)
     end
 }
 
@@ -226,9 +268,8 @@ local linters = {
     }
 }
 
-
 local formatters = {
-    prettier = {command = "prettier", args = {"--stdin-filepath", "%filepath"}}
+  --prettier = {command = "prettier-eslint", args = {"--stdin-filepath", "%filepath"}}
 }
 
 local formatFiletypes = {
@@ -246,16 +287,6 @@ nvim_lsp.diagnosticls.setup {
         formatFiletypes = formatFiletypes
     }
 }
-
---local custom_codeAction_callback = function (a, b, action)
---  print(vim.inspect(a))
---  print(vim.inspect(b))
---  print(vim.inspect(action))
---  return action
---end
---
---vim.lsp.handlers['textDocument/codeAction'] = custom_codeAction_callback
-
 EOF
 
 let g:compe = {}
@@ -389,12 +420,12 @@ nnoremap <silent> <space>wl <cmd>lua print(vim.inspect(vim.lsp.buf.list_workspac
 nnoremap <silent> <space>D <cmd>lua vim.lsp.buf.type_definition()<CR>
 nnoremap <silent> <space>rn <cmd>lua vim.lsp.buf.rename()<CR>
 nnoremap <silent> <leader>ac <cmd>lua vim.lsp.buf.code_action()<CR>
-nnoremap <silent> gr <cmd>lua vim.lsp.buf.references()<CR>
+nnoremap <silent> <leader>gr <cmd>lua vim.lsp.buf.references()<CR>
 nnoremap <silent> <space>e <cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>
 nnoremap <silent> <C-k> <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>
 nnoremap <silent> <C-j> <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
 nnoremap <silent> <space>q <cmd>lua vim.lsp.diagnostic.set_loclist()<CR>
-nnoremap <silent> <leader>qf lua vim.lsp.buf.code_action()<esc><C-o>
+nnoremap <silent> <leader>qf :TSLspFixCurrent<CR>
 nnoremap <leader>af mF:%!eslint_d --stdin --fix-to-stdout --stdin-filename %<CR>`F:w<CR>
 nnoremap <CR> :nohl<CR>
 vnoremap < <gv
