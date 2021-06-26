@@ -341,8 +341,6 @@ nnoremap <leader>k :wincmd k<CR>
 nnoremap <leader>l :wincmd l<CR>
 nnoremap <leader>gc :GBranches<CR>
 nnoremap <leader>ga :Git fetch --all<CR>
-nnoremap K {
-nnoremap J }
 nnoremap Y y$
 nnoremap <leader>prw :CocSearch <C-R>=expand("<cword>")<CR><CR>
 nnoremap <leader>pw :Rg <C-R>=expand("<cword>")<CR><CR>
@@ -413,7 +411,8 @@ vnoremap <C-r> "hy:%s/\C<C-r>h//gc<left><left><left>
 vnoremap X "_d
 
 " Insert maps
-" inoremap jj <esc>
+inoremap jj <esc>
+
 "resolving control backspaces
 inoremap <C-h> <C-w>
 inoremap <C-BS> <C-h>
