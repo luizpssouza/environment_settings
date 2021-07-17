@@ -89,6 +89,8 @@ Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': 
 
 Plug 'romainl/vim-qf'
 
+Plug 'christoomey/vim-tmux-navigator'
+
 call plug#end()
 
 let g:ale_sign_error = '✘'
@@ -366,10 +368,15 @@ let g:UltiSnipsSnippetsDir='~/.config/nvim/UltiSnipsSnippets'
 
 
 "normal maps
-nnoremap <leader>h :wincmd h<CR>
-nnoremap <leader>j :wincmd j<CR>
-nnoremap <leader>k :wincmd k<CR>
-nnoremap <leader>l :wincmd l<CR>
+" nnoremap <leader>h :wincmd h<CR>
+" nnoremap <leader>j :wincmd j<CR>
+" nnoremap <leader>k :wincmd k<CR>
+" nnoremap <leader>l :wincmd l<CR>
+tnoremap <C-h> :TmuxNavigateLeft<cr>
+tnoremap <C-j> :TmuxNavigateDown<cr>
+tnoremap <C-k> :TmuxNavigateUp<cr>
+tnoremap <C-l> :TmuxNavigateRight<cr>
+
 nnoremap <leader>gc :GBranches<CR>
 nnoremap <leader>ga :Git fetch --all<CR>
 nnoremap Y y$
@@ -413,7 +420,8 @@ nnoremap <silent> <leader>gD <Cmd>lua vim.lsp.buf.declaration()<CR>
 nnoremap <silent> <leader>gd <Cmd>lua vim.lsp.buf.definition()<CR>
 nnoremap <silent> <leader>K <Cmd>lua vim.lsp.buf.hover()<CR>
 nnoremap <silent> <leader>gi <cmd>lua vim.lsp.buf.implementation()<CR>
-nnoremap <silent> <C-l> <cmd>lua vim.lsp.buf.signature_help()<CR>
+" nnoremap <silent> <C-l> <cmd>lua vim.lsp.buf.signature_help()<CR>
+nnoremap <silent> <leader>l <cmd>lua vim.lsp.buf.signature_help()<CR>
 nnoremap <silent> <space>wa <cmd>lua vim.lsp.buf.add_workspace_folder()<CR>
 nnoremap <silent> <space>wr <cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>
 nnoremap <silent> <space>wl <cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>
@@ -422,8 +430,10 @@ nnoremap <silent> <space>rn <cmd>lua vim.lsp.buf.rename()<CR>
 nnoremap <silent> <leader>ac <cmd>lua vim.lsp.buf.code_action()<CR>
 nnoremap <silent> <leader>gr <cmd>lua vim.lsp.buf.references()<CR>
 nnoremap <silent> <space>e <cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>
-nnoremap <silent> <C-k> <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>
-nnoremap <silent> <C-j> <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
+" nnoremap <silent> <C-k> <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>
+" nnoremap <silent> <C-j> <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
+nnoremap <silent> <leader>k <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>
+nnoremap <silent> <leader>j <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
 nnoremap <silent> <space>q <cmd>lua vim.lsp.diagnostic.set_loclist()<CR>
 nnoremap <silent> <leader>qf :TSLspFixCurrent<CR>
 nnoremap <leader>af mF:%!eslint_d --stdin --fix-to-stdout --stdin-filename %<CR>`F:w<CR>

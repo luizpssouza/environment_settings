@@ -1,3 +1,5 @@
+export EDITOR=nvim
+
 . ~/tmuxcompletion
 
 # binding keys
