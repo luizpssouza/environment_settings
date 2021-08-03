@@ -76,6 +76,8 @@ alias mtask='nvim ~/Documents/tasks.txt'
 
 alias activate='source venv/bin/activate'
 
+alias cpwd='pwd | clip'
+
 # kubernetes
 alias k='kubectl'
 complete -F __start_kubectl k
@@ -129,7 +131,11 @@ alias po="poetry"
 alias pos="python_path_default; poetry shell;"
 
 # yarn
-alias yarntestall="yarn lint && yarn test && yarn build"
+alias yta="yarn lint && yarn test && yarn build"
+alias ys="yarn start"
+alias ysd="yarn start:dev"
+alias yt="yarn test"
+alias yb="yarn build"
 
 # python
 python_path_default() {
@@ -173,3 +179,5 @@ alias ip6='dig @ns1.google.com TXT o-o.myaddr.l.google.com +short -6'
 alias cip4='ip4 | clip'
 
 alias fnf='sh ~/games/fnf/launch.sh'
+
+f() { find . -name "*$1*"; }

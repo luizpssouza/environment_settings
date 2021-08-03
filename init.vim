@@ -51,6 +51,7 @@ Plug 'SirVer/ultisnips'
 Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/vim-vsnip-integ'
 Plug 'honza/vim-snippets'
+Plug 'wincent/ferret'
 
 Plug 'prettier/vim-prettier', {
   \ 'do': 'yarn install',
@@ -337,8 +338,7 @@ let mapleader = " "
 let g:netrw_browse_split = 2
 let g:netrw_banner = 0
 let g:netrw_winsize = 50
-" let g:netrw_liststyle = 3
-" let g:netrw_keepdir=0
+" let g:netrw_localrmdir='rm -r'
 
 let g:fzf_layout = { 'window': { 'width': 0.8, 'height': 0.8 } }
 let $FZF_DEFAULT_OPTS='--reverse'
@@ -437,7 +437,7 @@ nnoremap <silent> <leader>j <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
 nnoremap <silent> <space>q <cmd>lua vim.lsp.diagnostic.set_loclist()<CR>
 nnoremap <silent> <leader>qf :TSLspFixCurrent<CR>
 nnoremap <leader>af mF:%!eslint_d --stdin --fix-to-stdout --stdin-filename %<CR>`F:w<CR>
-nnoremap <CR> :nohl<CR>
+" nnoremap <CR> :nohl<CR>
 vnoremap < <gv
 vnoremap > >gv
 
